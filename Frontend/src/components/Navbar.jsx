@@ -65,17 +65,14 @@ const Navbar = () => {
             py-3
             rounded-xl
             bg-linear-to-r
-            from-blue-600
-            to-violet-600
+            from-gray-950
+            to-violet-900
             text-white
             font-semibold
             shadow-lg
             shadow-blue-500/25
-            transition
-            duration-300
-            hover:scale-105
-            hover:shadow-xl
-            hover:shadow-violet-500/30
+           
+           
           "
           >
             Get Started
