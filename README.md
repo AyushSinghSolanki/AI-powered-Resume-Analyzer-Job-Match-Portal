@@ -1,4 +1,4 @@
-# 🚀 AI Resume Analyzer & Job Match Portal
+#  AI Resume Analyzer & Job Match Portal
 
 > **Analyze. Optimize. Get Hired.**
 
