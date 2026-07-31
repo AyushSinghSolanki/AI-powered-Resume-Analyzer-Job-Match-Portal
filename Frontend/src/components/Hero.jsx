@@ -287,7 +287,7 @@ const Hero = () => {
         >
           Ready to transform your career?
           <br className="hidden sm:block" />
-          Your success story starts now.
+          Let's see what can it do
         </h2>
       </div>
 
