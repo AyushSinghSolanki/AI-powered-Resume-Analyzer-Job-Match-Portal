@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment Variables
+.env
+**/.env
+
+# Build
+dist/
+build/
+**/dist/
+**/build/
+
+# Uploads
+backend/uploads/
+
+# Prisma Local Database
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/
+coverage/
