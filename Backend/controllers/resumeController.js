@@ -52,7 +52,7 @@ export const uploadResume = async (req, res) => {
     const resume = await prisma.resume.create({
       data: {
         fileName: req.file.originalname,
-        fileUrl: null,
+        fileUrl: "memory-upload",
 
         extractedText,
 
@@ -65,7 +65,11 @@ export const uploadResume = async (req, res) => {
         improvedResume: improvedResume?.improvedResume || null,
         improvedAnalysis: improvedAnalysis || null,
 
-        userId: req.user.id,
+        user: {
+          connect: {
+            id: req.user.id,
+          },
+        },
       },
     });
 
