@@ -27,9 +27,14 @@ model Resume {
 
   extractedText String? @db.Text
 
+  // Original Resume
   atsScore Int?
-
   analysis Json?
+
+  // Improved Resume
+  improvedScore Int?
+  improvedResume String? @db.Text
+  improvedAnalysis Json?
 
   status String @default("uploaded")
 

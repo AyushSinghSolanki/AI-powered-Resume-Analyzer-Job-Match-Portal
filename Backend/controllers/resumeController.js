@@ -2,6 +2,7 @@ import prisma from "../config/db.js";
 import fs from "fs";
 import { PDFParse } from "pdf-parse";
 import { analyzeResumeAI } from "../services/resumeAI.js";
+import { improveResumeAI } from "../services/improveResumeAI.js";
 
 export const uploadResume = async (req, res) => {
   try {
@@ -30,12 +31,23 @@ export const uploadResume = async (req, res) => {
     }
 
     // AI ANALYSIS
+    // AI ANALYSIS
     let aiResult = null;
+    let improvedResume = null;
+    let improvedAnalysis = null;
 
     if (extractedText) {
+      // Step 1: Analyze Original Resume
       aiResult = await analyzeResumeAI(extractedText);
+
+      // Step 2: Improve Resume
+      improvedResume = await improveResumeAI(extractedText);
+
+      // Step 3: Analyze Improved Resume
+      improvedAnalysis = await analyzeResumeAI(improvedResume.improvedResume);
     }
 
+    // SAVE RESUME
     // SAVE RESUME
     const resume = await prisma.resume.create({
       data: {
@@ -44,9 +56,14 @@ export const uploadResume = async (req, res) => {
 
         extractedText,
 
+        // Original Analysis
         atsScore: aiResult?.score || null,
-
         analysis: aiResult || null,
+
+        // Improved Analysis
+        improvedScore: improvedAnalysis?.score || null,
+        improvedResume: improvedResume?.improvedResume || null,
+        improvedAnalysis: improvedAnalysis || null,
 
         userId: req.user.id,
       },

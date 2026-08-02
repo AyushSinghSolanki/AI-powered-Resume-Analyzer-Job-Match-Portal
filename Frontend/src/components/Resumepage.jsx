@@ -1,10 +1,21 @@
 import React, { useState, useRef } from "react";
 import toast from "react-hot-toast";
+import api from "../api/axios";
 
 const Resumepage = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
+  const [analysis, setAnalysis] = useState(null);
+  const [oldScore, setOldScore] = useState(null);
+  const [newScore, setNewScore] = useState(null);
+
+  const getStrokeOffset = (score) => {
+    const radius = 40;
+    const circumference = 2 * Math.PI * radius; // ≈ 251.2
+
+    return circumference - (score / 100) * circumference;
+  };
 
   // States: 'upload' | 'reading' | 'analyzing' | 'fixes'
   const [currentView, setCurrentView] = useState("upload");
@@ -54,28 +65,51 @@ const Resumepage = () => {
     }
   };
 
-  const handleCheckScore = () => {
-    if (!file) {
-      toast.error("Please upload your resume first!");
-      return;
-    }
+const handleCheckScore = async () => {
+  if (!file) {
+    toast.error("Please upload your resume first!");
+    return;
+  }
 
-    toast.success("Analyzing resume...");
-
-    // 1. Start with Reading
+  try {
     setCurrentView("reading");
 
-    // 2. Switch to Analyzing after 3.5 seconds
+    // FormData pehle banao
+    const formData = new FormData();
+    formData.append("resume", file);
+
+    // Reading animation ke liye wait
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // API call
+    const response = await api.post("/resume/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    const resumeData = response.data.resume;
+
+    console.log("Resume Data:", resumeData);
+
+    setAnalysis(resumeData);
+    setOldScore(resumeData.atsScore);
+
+    // Ab Analyzing page dikhao
+    setCurrentView("analyzing");
+
+    // 3 sec baad Fixes page
     setTimeout(() => {
-      setCurrentView("analyzing");
+      // Abhi fake score hai
+      setNewScore(resumeData.improvedScore);
 
-      // 3. Finally show the Fixes and Improved Score after another 3.5 seconds
-      setTimeout(() => {
-        setCurrentView("fixes");
-      }, 3500);
-    }, 3500);
-  };
-
+      setCurrentView("fixes");
+    }, 3000);
+  } catch (error) {
+    console.log(error);
+    toast.error("Something went wrong");
+  }
+};
   // -------------------------------------------------------------
   // UI COMPONENT: PROGRESS BAR (With TRUE Moving Dotted Line)
   // -------------------------------------------------------------
@@ -373,19 +407,23 @@ const Resumepage = () => {
                   cy="50"
                   r="40"
                   fill="none"
-                  className="stroke-orange-500"
-                  strokeWidth="8"
-                  strokeDasharray="145 251"
+                  className="stroke-emerald-500"
+                  strokeWidth="6"
                   strokeLinecap="round"
+                  strokeDasharray={251.2}
+                  strokeDashoffset={getStrokeOffset(oldScore || 0)}
+                  style={{
+                    transition: "stroke-dashoffset 1s ease",
+                  }}
                 />
               </svg>
               <div className="absolute text-4xl font-bold text-gray-900">
-                58
+                {oldScore || 0}
               </div>
             </div>
 
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              Your ATS score is 58 out of 100
+              Your ATS score is {analysis?.atsScore} out of 100
             </h2>
             <p className="text-rose-500 text-sm mb-8 text-center max-w-xs">
               Below 75, most resumes are auto-rejected before a recruiter sees
@@ -423,8 +461,39 @@ const Resumepage = () => {
                 <div className="flex items-center justify-center gap-4 w-full mb-10">
                   {/* Old Score */}
                   <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 rounded-full border-4 border-orange-100 flex items-center justify-center text-xl font-bold text-gray-400">
-                      58
+                    <div className="relative flex items-center justify-center w-16 h-16">
+                      <svg
+                        className="w-full h-full transform -rotate-90"
+                        viewBox="0 0 100 100"
+                      >
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="40"
+                          fill="none"
+                          className="stroke-gray-200"
+                          strokeWidth="6"
+                        />
+
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="40"
+                          fill="none"
+                          className="stroke-orange-400"
+                          strokeWidth="6"
+                          strokeLinecap="round"
+                          strokeDasharray={251.2}
+                          strokeDashoffset={getStrokeOffset(oldScore || 0)}
+                          style={{
+                            transition: "stroke-dashoffset 1s ease",
+                          }}
+                        />
+                      </svg>
+
+                      <div className="absolute text-xl font-bold text-gray-700">
+                        {oldScore}
+                      </div>
                     </div>
                   </div>
 
@@ -464,13 +533,17 @@ const Resumepage = () => {
                         r="40"
                         fill="none"
                         className="stroke-emerald-500"
-                        strokeWidth="6"
-                        strokeDasharray="231 251"
+                        strokeWidth="7"
                         strokeLinecap="round"
+                        strokeDasharray={251.2}
+                        strokeDashoffset={getStrokeOffset(newScore || 0)}
+                        style={{
+                          transition: "stroke-dashoffset 1.2s ease",
+                        }}
                       />
                     </svg>
                     <div className="absolute text-3xl font-bold text-gray-900">
-                      92
+                      {newScore || 0}
                     </div>
                   </div>
                 </div>
@@ -508,15 +581,17 @@ const Resumepage = () => {
                     {/* Header */}
                     <div className="text-center border-b-[1.5px] border-gray-300 pb-5 mb-5">
                       <h1 className="text-2xl font-serif text-gray-900 tracking-widest uppercase">
-                        Ayush Singh Solanki
+                        {analysis?.analysis?.candidate?.name}
                       </h1>
                       <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-[13px] text-gray-700 mt-3 font-serif">
-                        <span className="flex items-center">📞 9351049780</span>
                         <span className="flex items-center">
-                          ✉ ayushsolanki.pis9@gmail.com
+                          {analysis?.analysis?.candidate?.phone}
                         </span>
                         <span className="flex items-center">
-                          📍 Jaipur, Rajasthan
+                          ✉ {analysis?.analysis?.candidate?.email}
+                        </span>
+                        <span className="flex items-center">
+                          📍 {analysis?.analysis?.candidate?.location}
                         </span>
                       </div>
                     </div>
@@ -528,13 +603,7 @@ const Resumepage = () => {
                       </h2>
                       {/* The Red Box matching your image */}
                       <div className="bg-rose-100/70 border border-rose-300 text-rose-900 p-3 text-sm font-serif leading-relaxed">
-                        Computer Science Engineering student passionate about AI
-                        and Backend Development. Proficient in Java, JavaScript,
-                        Node.js, Express.js, React.js, PostgreSQL, MongoDB, and
-                        Data Structures & Algorithms. Skilled in building
-                        scalable web applications and AI-powered solutions, with
-                        a strong focus on problem-solving, continuous learning,
-                        and software development.
+                        {analysis?.analysis?.summary}
                       </div>
                       <p className="text-xs text-rose-600 mt-2 font-sans font-medium flex items-center">
                         <svg
@@ -616,13 +685,16 @@ const Resumepage = () => {
 
                   {/* The Green fixed text */}
                   <div className="bg-white text-gray-800 p-4 rounded-lg border border-emerald-100 shadow-sm text-sm font-serif leading-relaxed">
-                    Results-driven Computer Science Engineer specializing in AI
-                    and Backend Architecture. Proven expertise in building
-                    scalable web applications leveraging Java, Node.js, and
-                    React.js. Adept at optimizing database performance using
-                    PostgreSQL and MongoDB. Strong foundation in Data Structures
-                    & Algorithms, delivering high-impact problem-solving
-                    solutions for continuous software evolution.
+                    {analysis?.analysis?.summary}
+                  </div>
+                  <h3 className="font-bold mt-5 text-emerald-900">Strengths</h3>
+
+                  <div className="space-y-2 mt-2">
+                    {analysis?.analysis?.strengths?.map((item, index) => (
+                      <p key={index} className="text-sm text-gray-700">
+                        ✅ {item}
+                      </p>
+                    ))}
                   </div>
 
                   <div className="flex items-start mt-4 bg-emerald-100/50 p-3 rounded-lg">

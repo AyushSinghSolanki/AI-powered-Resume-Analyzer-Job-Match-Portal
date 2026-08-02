@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom"; // 1. useNavigate import karein
+import api from "../api/axios";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,46 +11,53 @@ const Login = () => {
     password: "",
   });
 
+  const navigate = useNavigate(); // 2. Hook ko initialize karein
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLogin) {
-      toast.success(`Welcome back! Logging in with ${formData.email}`, {
-        style: {
-          background: "#101012",
-          color: "#fff",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-        },
-        iconTheme: {
-          primary: "#10B981",
-          secondary: "#000",
-        },
-      });
-    } else {
-      toast.success(`Account created successfully for ${formData.name}!`, {
-        style: {
-          background: "#101012",
-          color: "#fff",
-          border: "1px solid rgba(255, 255, 255, 0.1)",
-        },
-        iconTheme: {
-          primary: "#10B981",
-          secondary: "#000",
-        },
-      });
+
+    try {
+      if (isLogin) {
+        const res = await api.post("/auth/login", {
+          email: formData.email,
+          password: formData.password,
+        });
+
+        toast.success("Login successful");
+        console.log(res.data);
+
+       localStorage.setItem("token", res.data.token);
+        navigate("/");
+      } else {
+        const res = await api.post("/auth/register", {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        });
+
+        toast.success("Account created successfully");
+        console.log(res.data);
+
+        // Sign up ke baad chahein toh direct login page view par shift kar dein ya main page par bhej dein
+        setIsLogin(true);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center p-4 font-sans relative overflow-hidden">
-      {/* Background 3D Animated Glow Orbs (Size reduced) */}
-      <div className="absolute top-[-10%] left-[-10%]`w-75h-75` bg-emerald-500/20 rounded-full blur-[90px] pointer-events-none animate-pulse"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] `w-75 h-75` bg-purple-500/10 rounded-full blur-[90px] pointer-events-none animate-pulse"></div>
+      {/* Background 3D Animated Glow Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-75 h-75 bg-emerald-500/20 rounded-full blur-[90px] pointer-events-none animate-pulse"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-75 h-75 bg-purple-500/10 rounded-full blur-[90px] pointer-events-none animate-pulse"></div>
 
-      {/* Main 3D Container with Depth Effect (max-w-sm kiya for smaller layout) */}
+      {/* Main 3D Container */}
       <div className="w-full max-w-sm relative z-10 perspective-[1000px]">
         <div className="bg-[#101012]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.8)] transition-all duration-500 hover:shadow-[0_25px_50px_-12px_rgba(16,185,129,0.15)] transform hover:-translate-y-1">
           {/* Header */}
@@ -177,7 +186,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full mt-1 py-2.5 bg-linear-to-r from-emerald-500 to-teal-400 text-black text-xs font-semibold rounded-lg shadow-[0_8px_16px_rgba(16,185,129,0.3)] hover:shadow-[0_12px_20px_rgba(16,185,129,0.5)] transform hover:-translate-y-0.5 transition-all duration-200"
+              className="w-full mt-1 py-2.5 bg-linear-to-r from-emerald-500 to-teal-400 text-black text-xs font-semibold rounded-lg shadow-[0_8px_16px_rgba(16,185,129,0.3)] hover:shadow-[0_12px_20px_rgba(16,185,129,0.5)] transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
             >
               {isLogin ? "Sign In" : "Create Account"}
             </button>

@@ -1,38 +1,59 @@
 import client from "../config/openrouter.js";
 
 export const analyzeResumeAI = async (resumeText) => {
-  const prompt = `
-You are an expert ATS resume analyzer.
+ const prompt = `
+You are an expert ATS Resume Analyzer and Resume Parser.
 
-Analyze this resume.
+Analyze the resume and extract the candidate's details.
 
-Give response ONLY in JSON format.
+Return ONLY valid JSON.
 
 Resume:
 
 ${resumeText}
 
-
-Return:
+Return this exact JSON structure:
 
 {
- "score": number,
- "strengths":[
-   "point1",
-   "point2"
- ],
- "weaknesses":[
-   "point1",
-   "point2"
- ],
- "suggestions":[
-   "point1",
-   "point2"
- ],
- "summary":"short review"
+  "score": 0,
+
+  "candidate": {
+    "name": "",
+    "email": "",
+    "phone": "",
+    "location": "",
+    "linkedin": "",
+    "github": ""
+  },
+
+  "summary": "",
+
+  "strengths": [
+    "",
+    "",
+    ""
+  ],
+
+  "weaknesses": [
+    "",
+    "",
+    ""
+  ],
+
+  "suggestions": [
+    "",
+    "",
+    ""
+  ]
 }
 
-Score should be between 0-100.
+Rules:
+
+- Score must be between 0 and 100.
+- Extract candidate information only from the resume.
+- If any field is missing, return an empty string.
+- Do not invent any information.
+- Return ONLY JSON.
 `;
 
   const completion = await client.chat.completions.create({
