@@ -1,5 +1,5 @@
 import prisma from "../config/db.js";
-import fs from "fs";
+
 import { PDFParse } from "pdf-parse";
 import { analyzeResumeAI } from "../services/resumeAI.js";
 import { improveResumeAI } from "../services/improveResumeAI.js";
@@ -17,7 +17,7 @@ export const uploadResume = async (req, res) => {
 
     // PDF TEXT EXTRACTION
     if (req.file.mimetype === "application/pdf") {
-      const buffer = fs.readFileSync(req.file.path);
+      const buffer = req.file.buffer;
 
       const parser = new PDFParse({
         data: buffer,
@@ -52,7 +52,7 @@ export const uploadResume = async (req, res) => {
     const resume = await prisma.resume.create({
       data: {
         fileName: req.file.originalname,
-        fileUrl: req.file.path,
+        fileUrl: null,
 
         extractedText,
 

@@ -122,4 +122,4 @@ export const getMe = async (req, res) => {
     success: true,
     user: req.user,
   });
-};
+}; 
