@@ -82,11 +82,14 @@ const handleCheckScore = async () => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // API call
-    const response = await api.post("/resume/upload", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+   const token = localStorage.getItem("token");
+
+   const response = await api.post("/resume/upload", formData, {
+     headers: {
+       Authorization: `Bearer ${token}`,
+       "Content-Type": "multipart/form-data",
+     },
+   });
 
     const resumeData = response.data.resume;
 
