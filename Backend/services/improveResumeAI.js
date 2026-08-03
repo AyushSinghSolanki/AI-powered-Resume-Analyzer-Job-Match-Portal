@@ -4,9 +4,9 @@ export const improveResumeAI = async (resumeText) => {
   const prompt = `
 You are an expert ATS Resume Writer and Career Coach.
 
-Your task is to rewrite the following resume so it becomes highly ATS-friendly.
+Rewrite the following resume to make it highly ATS-friendly.
 
-IMPORTANT RULES:
+Rules:
 
 - Never invent fake experience.
 - Never invent fake projects.
@@ -15,45 +15,35 @@ IMPORTANT RULES:
 - Keep all information truthful.
 - Improve grammar.
 - Improve formatting.
-- Rewrite summary professionally.
+- Rewrite the summary professionally.
 - Rewrite bullet points using strong action verbs.
-- Add ATS keywords wherever appropriate.
-- Make the resume concise and recruiter-friendly.
+- Add ATS-friendly keywords wherever appropriate.
 - Improve readability.
 - Keep the same education, skills, projects and experience.
-- Do NOT remove important information.
+
+IMPORTANT:
+Return ONLY the improved resume as plain text.
+
+Do NOT return JSON.
+Do NOT use markdown.
+Do NOT add explanations.
 
 Resume:
 
 ${resumeText}
-
-Return ONLY valid JSON.
-
-{
-  "improvedResume":"Complete improved resume as plain text"
-}
 `;
 
   const completion = await client.chat.completions.create({
     model: "openai/gpt-4.1-mini",
-
     messages: [
       {
         role: "user",
         content: prompt,
       },
     ],
-
     temperature: 0.3,
-    max_tokens: 500,
+    max_tokens: 2000,
   });
 
-  let response = completion.choices[0].message.content;
-
-  response = response
-    .replace(/```json/g, "")
-    .replace(/```/g, "")
-    .trim();
-
-  return JSON.parse(response);
+  return completion.choices[0].message.content.trim();
 };

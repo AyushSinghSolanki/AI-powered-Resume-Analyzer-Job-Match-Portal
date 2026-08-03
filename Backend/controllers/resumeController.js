@@ -43,8 +43,7 @@ export const uploadResume = async (req, res) => {
       // Step 2: Improve Resume
       improvedResume = await improveResumeAI(extractedText);
 
-      // Step 3: Analyze Improved Resume
-      improvedAnalysis = await analyzeResumeAI(improvedResume.improvedResume);
+      improvedAnalysis = await analyzeResumeAI(improvedResume);
     }
 
     // SAVE RESUME
@@ -62,7 +61,7 @@ export const uploadResume = async (req, res) => {
 
         // Improved Analysis
         improvedScore: improvedAnalysis?.score || null,
-        improvedResume: improvedResume?.improvedResume || null,
+        improvedResume: improvedResume || null,
         improvedAnalysis: improvedAnalysis || null,
 
         user: {
