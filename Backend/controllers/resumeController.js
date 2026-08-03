@@ -15,7 +15,6 @@ export const uploadResume = async (req, res) => {
 
     let extractedText = "";
 
-    // PDF TEXT EXTRACTION
     if (req.file.mimetype === "application/pdf") {
       const buffer = req.file.buffer;
 
@@ -30,24 +29,18 @@ export const uploadResume = async (req, res) => {
       await parser.destroy();
     }
 
-    // AI ANALYSIS
-    // AI ANALYSIS
     let aiResult = null;
     let improvedResume = null;
     let improvedAnalysis = null;
 
     if (extractedText) {
-      // Step 1: Analyze Original Resume
       aiResult = await analyzeResumeAI(extractedText);
 
-      // Step 2: Improve Resume
       improvedResume = await improveResumeAI(extractedText);
 
       improvedAnalysis = await analyzeResumeAI(improvedResume);
     }
 
-    // SAVE RESUME
-    // SAVE RESUME
     const resume = await prisma.resume.create({
       data: {
         fileName: req.file.originalname,
@@ -55,11 +48,9 @@ export const uploadResume = async (req, res) => {
 
         extractedText,
 
-        // Original Analysis
         atsScore: aiResult?.score || null,
         analysis: aiResult || null,
 
-        // Improved Analysis
         improvedScore: improvedAnalysis?.score || null,
         improvedResume: improvedResume || null,
         improvedAnalysis: improvedAnalysis || null,

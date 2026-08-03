@@ -12,15 +12,13 @@ const Resumepage = () => {
 
   const getStrokeOffset = (score) => {
     const radius = 40;
-    const circumference = 2 * Math.PI * radius; // ≈ 251.2
+    const circumference = 2 * Math.PI * radius;
 
     return circumference - (score / 100) * circumference;
   };
 
-  // States: 'upload' | 'reading' | 'analyzing' | 'fixes'
   const [currentView, setCurrentView] = useState("upload");
 
-  // Drag and Drop Handlers
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
@@ -65,60 +63,51 @@ const Resumepage = () => {
     }
   };
 
-const handleCheckScore = async () => {
-  if (!file) {
-    toast.error("Please upload your resume first!");
-    return;
-  }
+  const handleCheckScore = async () => {
+    if (!file) {
+      toast.error("Please upload your resume first!");
+      return;
+    }
 
-  try {
-    setCurrentView("reading");
+    try {
+      setCurrentView("reading");
 
-    // FormData pehle banao
-    const formData = new FormData();
-    formData.append("resume", file);
+      const formData = new FormData();
+      formData.append("resume", file);
 
-    // Reading animation ke liye wait
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // API call
-   const token = localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
-   const response = await api.post("/resume/upload", formData, {
-     headers: {
-       Authorization: `Bearer ${token}`,
-       "Content-Type": "multipart/form-data",
-     },
-   });
+      const response = await api.post("/resume/upload", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    const resumeData = response.data.resume;
+      const resumeData = response.data.resume;
 
-    console.log("Resume Data:", resumeData);
+      console.log("Resume Data:", resumeData);
 
-    setAnalysis(resumeData);
-    setOldScore(resumeData.atsScore);
+      setAnalysis(resumeData);
+      setOldScore(resumeData.atsScore);
 
-    // Ab Analyzing page dikhao
-    setCurrentView("analyzing");
+      setCurrentView("analyzing");
 
-    // 3 sec baad Fixes page
-    setTimeout(() => {
-      // Abhi fake score hai
-      setNewScore(resumeData.improvedScore);
+      setTimeout(() => {
+        setNewScore(resumeData.improvedScore);
 
-      setCurrentView("fixes");
-    }, 3000);
-  } catch (error) {
-    console.log(error);
-    toast.error("Something went wrong");
-  }
-};
-  // -------------------------------------------------------------
-  // UI COMPONENT: PROGRESS BAR (With TRUE Moving Dotted Line)
-  // -------------------------------------------------------------
+        setCurrentView("fixes");
+      }, 3000);
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
+    }
+  };
+
   const ProgressBar = ({ step }) => (
     <div className="w-full max-w-2xl mx-auto mb-16 mt-8 relative">
-      {/* Custom CSS for the moving line animation */}
       <style>
         {`
           @keyframes move-line {
@@ -128,15 +117,12 @@ const handleCheckScore = async () => {
         `}
       </style>
 
-      {/* Background & Animated Lines Using SVG for Real Motion */}
       <svg
         className="absolute top-2.75 left-[10%] w-[80%] h-2 z-0 overflow-visible"
         preserveAspectRatio="none"
       >
-        {/* Base Gray Line */}
         <line x1="0" y1="0" x2="100%" y2="0" stroke="#E5E7EB" strokeWidth="4" />
 
-        {/* Segment 1: Reading (Moving Dotted) -> Analysing (Solid) */}
         <line
           x1="0"
           y1="0"
@@ -152,7 +138,6 @@ const handleCheckScore = async () => {
           }
         />
 
-        {/* Segment 2: Analysing (Moving Dotted) -> Fixes (Solid) */}
         {(step === "analyzing" || step === "fixes") && (
           <line
             x1="50%"
@@ -171,9 +156,7 @@ const handleCheckScore = async () => {
         )}
       </svg>
 
-      {/* Steps (Circles and Labels) */}
       <div className="flex justify-between items-start relative z-10">
-        {/* Step 1: Reading */}
         <div className="flex flex-col items-center w-[20%]">
           <div className="bg-white px-2 mb-2">
             {step === "reading" ? (
@@ -202,7 +185,6 @@ const handleCheckScore = async () => {
           </span>
         </div>
 
-        {/* Step 2: Analysing */}
         <div className="flex flex-col items-center w-[20%]">
           <div className="bg-white px-2 mb-2">
             {step === "reading" ? (
@@ -233,7 +215,6 @@ const handleCheckScore = async () => {
           </span>
         </div>
 
-        {/* Step 3: Preparing fixes */}
         <div className="flex flex-col items-center w-[20%]">
           <div className="bg-white px-2 mb-2">
             {step === "fixes" ? (
@@ -268,9 +249,6 @@ const handleCheckScore = async () => {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 pt-32 pb-16 px-4 font-sans flex justify-center">
       <div className="max-w-5xl w-full">
-        {/* =========================================
-            VIEW 1: UPLOAD SCREEN 
-            ========================================= */}
         {currentView === "upload" && (
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
@@ -338,9 +316,6 @@ const handleCheckScore = async () => {
           </div>
         )}
 
-        {/* =========================================
-            VIEW 2: READING SCREEN
-            ========================================= */}
         {currentView === "reading" && (
           <div className="flex flex-col items-center w-full max-w-lg mx-auto animate-in fade-in duration-500 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
             <ProgressBar step="reading" />
@@ -385,9 +360,6 @@ const handleCheckScore = async () => {
           </div>
         )}
 
-        {/* =========================================
-            VIEW 3: ANALYZING SCREEN (Old Score)
-            ========================================= */}
         {currentView === "analyzing" && (
           <div className="flex flex-col items-center w-full max-w-lg mx-auto animate-in fade-in duration-500 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
             <ProgressBar step="analyzing" />
@@ -444,25 +416,19 @@ const handleCheckScore = async () => {
           </div>
         )}
 
-        {/* =========================================
-            VIEW 4: PREPARING FIXES (Visual Resume Diff & Score)
-            ========================================= */}
         {currentView === "fixes" && (
           <div className="w-full mx-auto animate-in fade-in zoom-in-95 duration-500">
             <div className="max-w-2xl mx-auto mb-8">
               <ProgressBar step="fixes" />
             </div>
 
-            {/* Added items-start here so the left column can stay sticky properly */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Score Improvement (Sticky Static) */}
               <div className="lg:col-span-4 bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center sticky top-28">
                 <h3 className="text-lg font-semibold text-gray-600 mb-8 text-center">
                   Score Improved!
                 </h3>
 
                 <div className="flex items-center justify-center gap-4 w-full mb-10">
-                  {/* Old Score */}
                   <div className="flex flex-col items-center">
                     <div className="relative flex items-center justify-center w-16 h-16">
                       <svg
@@ -500,7 +466,6 @@ const handleCheckScore = async () => {
                     </div>
                   </div>
 
-                  {/* Arrow */}
                   <svg
                     className="w-8 h-8 text-emerald-500 animate-pulse"
                     fill="none"
@@ -515,7 +480,6 @@ const handleCheckScore = async () => {
                     />
                   </svg>
 
-                  {/* New Score Big */}
                   <div className="relative flex items-center justify-center w-28 h-28 shadow-[0_0_25px_rgba(16,185,129,0.2)] rounded-full">
                     <svg
                       className="w-full h-full transform -rotate-90"
@@ -529,7 +493,6 @@ const handleCheckScore = async () => {
                         className="stroke-gray-100"
                         strokeWidth="6"
                       />
-                      {/* 92 out of 100 */}
                       <circle
                         cx="50"
                         cy="50"
@@ -571,17 +534,13 @@ const handleCheckScore = async () => {
                 </div>
               </div>
 
-              {/* Right Column: Visual Resume Diff (Scrollable) */}
               <div className="lg:col-span-8 space-y-6">
-                {/* Visual Issue Card (Red) */}
                 <div className="bg-white rounded-2xl shadow-sm border-2 border-rose-100 overflow-hidden relative">
                   <div className="absolute top-0 right-0 bg-rose-500 text-white text-xs font-bold px-4 py-1 rounded-bl-lg shadow-sm">
                     Issue Detected
                   </div>
 
-                  {/* Fake Resume Layout inside the card */}
                   <div className="p-8 bg-[#fdfdfd]">
-                    {/* Header */}
                     <div className="text-center border-b-[1.5px] border-gray-300 pb-5 mb-5">
                       <h1 className="text-2xl font-serif text-gray-900 tracking-widest uppercase">
                         {analysis?.analysis?.candidate?.name}
@@ -599,12 +558,10 @@ const handleCheckScore = async () => {
                       </div>
                     </div>
 
-                    {/* Highlighted Red Section */}
                     <div className="mb-2">
                       <h2 className="text-[15px] font-bold border-b border-black pb-1 mb-2 font-serif">
                         Summary
                       </h2>
-                      {/* The Red Box matching your image */}
                       <div className="bg-rose-100/70 border border-rose-300 text-rose-900 p-3 text-sm font-serif leading-relaxed">
                         {analysis?.analysis?.summary}
                       </div>
@@ -627,7 +584,6 @@ const handleCheckScore = async () => {
                       </p>
                     </div>
 
-                    {/* Blurred Out Rest of Resume */}
                     <div className="blur-[3px] opacity-50 select-none mt-6 pointer-events-none">
                       <h2 className="text-[15px] font-bold border-b border-black pb-1 mb-2 font-serif">
                         Education
@@ -644,7 +600,6 @@ const handleCheckScore = async () => {
                   </div>
                 </div>
 
-                {/* Arrow pointing down */}
                 <div className="flex justify-center -my-2 relative z-10">
                   <div className="bg-white p-2 rounded-full border border-gray-200 shadow-sm">
                     <svg
@@ -663,7 +618,6 @@ const handleCheckScore = async () => {
                   </div>
                 </div>
 
-                {/* Visual Fix Card (Green) */}
                 <div className="bg-emerald-50 rounded-2xl shadow-sm border-2 border-emerald-200 p-6 relative">
                   <div className="flex items-center gap-2 mb-4">
                     <span className="bg-emerald-500 text-white p-1.5 rounded-full shadow-sm">
@@ -686,7 +640,6 @@ const handleCheckScore = async () => {
                     </h3>
                   </div>
 
-                  {/* The Green fixed text */}
                   <div className="bg-white text-gray-800 p-4 rounded-lg border border-emerald-100 shadow-sm text-sm font-serif leading-relaxed">
                     {analysis?.analysis?.summary}
                   </div>
